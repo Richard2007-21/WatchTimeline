@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>WatchTimeline</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Icons, used with <svg><use href="#i-…"/></svg> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-sync" viewBox="0 0 16 16"><path d="M13.5 8A5.5 5.5 0 0 1 3.6 11.3M2.5 8a5.5 5.5 0 0 1 9.9-3.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12.9 1.9v3.2H9.7M3.1 14.1v-3.2h3.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6.9 1.5h2.2l.4 1.7 1.3.6 1.5-.9 1.6 1.6-.9 1.5.6 1.3 1.7.4v2.2l-1.7.4-.6 1.3.9 1.5-1.6 1.6-1.5-.9-1.3.6-.4 1.7H6.9l-.4-1.7-1.3-.6-1.5.9-1.6-1.6.9-1.5-.6-1.3-1.7-.4V6.9l1.7-.4.6-1.3-.9-1.5 1.6-1.6 1.5.9 1.3-.6z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-help" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.1v.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.6" r=".9" fill="currentColor"/></symbol>
+    <symbol id="i-update" viewBox="0 0 16 16"><path d="M8 2v8.5M4.5 7L8 10.5 11.5 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 11.5v1.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <!-- a playhead on a timeline -->
+    <symbol id="i-time" viewBox="0 0 16 16"><path d="M1.5 11.5h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 5.2v8.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.6 2h4.8v2.2L8 6.4 5.6 4.2z" fill="currentColor"/></symbol>
+    <!-- a selected clip -->
+    <symbol id="i-select" viewBox="0 0 16 16"><rect x="2" y="5" width="12" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5 5v6M11 5v6" stroke="currentColor" stroke-width="1.2"/><path d="M1 3.2V1.9h1.4M15 3.2V1.9h-1.4M1 12.8v1.3h1.4M15 12.8v1.3h-1.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></symbol>
+    <!-- the whole timeline -->
+    <symbol id="i-whole" viewBox="0 0 16 16"><rect x="1.8" y="2.5" width="12.4" height="3" rx="1" fill="currentColor"/><rect x="1.8" y="6.5" width="12.4" height="3" rx="1" fill="currentColor" opacity=".7"/><rect x="1.8" y="10.5" width="12.4" height="3" rx="1" fill="currentColor" opacity=".45"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.7-3.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.6 2.2v3.3h3.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 16 16"><path d="M2.5 13.5l.6-2.9 7.6-7.6a1.3 1.3 0 0 1 1.8 0l.5.5a1.3 1.3 0 0 1 0 1.8l-7.6 7.6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9.6 4.1l2.3 2.3" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 16 16"><path d="M2.8 4.3h10.4M6.3 4.3V2.8h3.4v1.5M4.2 4.3l.6 8.4a1 1 0 0 0 1 .9h4.4a1 1 0 0 0 1-.9l.6-8.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="8" height="8" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 3.2V3a1 1 0 0 0-1-1H3.5a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 16 16"><path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="flag-de" viewBox="0 0 5 3"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#dd0000"/><rect y="2" width="5" height="1" fill="#ffce00"/></symbol>
+    <symbol id="flag-en" viewBox="0 0 60 30"><clipPath id="gb-c"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#gb-c)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></symbol>
+  </svg>
+
+  <header>
+    <button id="back" class="icon" data-i18n-title="back" hidden><svg><use href="#i-back"/></svg></button>
+    <div id="title"><span id="viewName">WatchTimeline</span><span id="proj"></span></div>
+    <div id="lang" class="lang" data-i18n-title="langTip">
+      <button data-lang="de" title="Deutsch"><svg class="flag"><use href="#flag-de"/></svg>DE</button>
+      <button data-lang="en" title="English"><svg class="flag"><use href="#flag-en"/></svg>EN</button>
+    </div>
+    <button id="helpBtn" class="icon" data-i18n-title="helpTip"><svg><use href="#i-help"/></svg></button>
+    <button id="settingsBtn" class="icon" data-i18n-title="settingsTip"><svg><use href="#i-gear"/></svg></button>
+  </header>
+
+  <!-- Shown when a newer release is on GitHub -->
+  <div id="updateBanner" class="update" hidden>
+    <div class="up-head">
+      <svg class="up-ico"><use href="#i-update"/></svg>
+      <div class="up-text"><b id="upTitle"></b><small id="upText"></small></div>
+      <button id="upClose" class="icon" data-i18n-title="upLater">✕</button>
+    </div>
+    <pre id="upNotes" hidden></pre>
+    <div id="upActions" class="btnrow small">
+      <button id="upInstall" class="primary"><svg><use href="#i-update"/></svg><span id="upInstallLabel"></span></button>
+      <button id="upNotesBtn" data-i18n="upNotes"></button>
+    </div>
+  </div>
+
+  <!-- Main panel -->
+  <section id="view-main" class="view">
+    <!-- Where the next note goes -->
+    <div id="targetCard" class="card">
+      <div class="card-head">
+        <span id="targetKind" class="kind"></span>
+        <b id="targetName"></b>
+        <button id="refresh" class="icon" data-i18n-title="refreshTip"><svg><use href="#i-sync"/></svg></button>
+      </div>
+      <div id="targetTc" class="tc big"></div>
+      <p id="targetText"></p>
+    </div>
+
+    <div id="compose" class="compose">
+      <div id="scope" class="seg" role="radiogroup" data-i18n-aria="scopeTitle">
+        <button data-scope="time" role="radio"><svg><use href="#i-time"/></svg><span data-i18n="scopeTime"></span></button>
+        <button data-scope="selection" role="radio"><svg><use href="#i-select"/></svg><span data-i18n="scopeSelection"></span><span id="selCount" class="count" hidden></span></button>
+        <button data-scope="whole" role="radio"><svg><use href="#i-whole"/></svg><span data-i18n="scopeWhole"></span></button>
+      </div>
+      <p id="scopeDesc" class="desc"></p>
+      <textarea id="noteText" rows="3" spellcheck="false" data-i18n-placeholder="notePlaceholder"></textarea>
+      <button id="btnAdd" class="big primary" data-i18n-title="btnAddTip">
+        <svg><use href="#i-plus"/></svg><span data-i18n="btnAdd"></span>
+      </button>
+    </div>
+
+    <div id="notes"></div>
+
+    <div id="empty" class="emptybox" hidden>
+      <b data-i18n="emptyTitle"></b>
+      <span data-i18n="emptyText"></span>
+    </div>
+
+    <div id="doneBar" class="donebar" hidden>
+      <a id="doneToggle" href="#"></a>
+      <a id="doneClear" href="#" data-i18n="doneClear" hidden></a>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section id="view-settings" class="view" hidden>
+    <div class="group">
+      <h3 data-i18n="setLanguage"></h3>
+      <div class="lang big" id="langBig">
+        <button data-lang="de"><svg class="flag"><use href="#flag-de"/></svg>Deutsch</button>
+        <button data-lang="en"><svg class="flag"><use href="#flag-en"/></svg>English</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3 data-i18n="grpReview"></h3>
+      <label class="check"><input type="radio" name="reviewMode" value="manual" id="s-manual">
+        <span><span data-i18n="setManual"></span><small data-i18n="setManualHint"></small></span></label>
+      <label class="check"><input type="radio" name="reviewMode" value="auto" id="s-auto">
+        <span><span data-i18n="setAuto"></span><small data-i18n="setAutoHint"></small></span></label>
+    </div>
+
+    <div class="group">
+      <h3 data-i18n="grpMarkers"></h3>
+      <label class="check"><input type="checkbox" id="s-markers">
+        <span><span data-i18n="setMarkers"></span><small data-i18n="setMarkersHint"></small></span></label>
+      <div class="legendrow">
+        <span><i class="dot open"></i><span data-i18n="secOpen"></span></span>
+        <span><i class="dot review"></i><span data-i18n="secReview"></span></span>
+        <span><i class="dot question"></i><span data-i18n="badgeQuestion"></span></span>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3 data-i18n="grpSkill"></h3>
+      <p data-i18n="skillIntro"></p>
+      <div class="upstate">
+        <span id="skillState"></span>
+        <button id="btnSkill"><svg><use href="#i-update"/></svg><span id="btnSkillLabel"></span></button>
+      </div>
+      <small id="skillPath" class="path"></small>
+    </div>
+
+    <div class="group">
+      <h3 data-i18n="grpUpdates"></h3>
+      <label class="check"><input type="checkbox" id="s-checkUpdates">
+        <span><span data-i18n="setCheckUpdates"></span><small data-i18n="setCheckUpdatesHint"></small></span></label>
+      <div class="upstate">
+        <span id="upVersion"></span>
+        <button id="btnCheckUpdates"><svg><use href="#i-sync"/></svg><span data-i18n="btnCheckUpdates"></span></button>
+      </div>
+      <small id="upState"></small>
+    </div>
+
+    <div class="group">
+      <h3 data-i18n="grpData"></h3>
+      <p data-i18n="dataText"></p>
+      <small id="dataPath" class="path"></small>
+      <a id="showFolder" href="#" class="link" data-i18n="showFolder"></a>
+    </div>
+  </section>
+
+  <!-- Help -->
+  <section id="view-help" class="view" hidden>
+    <div class="group">
+      <h3 data-i18n="help1T"></h3>
+      <p data-i18n="help1"></p>
+    </div>
+    <div class="group">
+      <h3 data-i18n="help2T"></h3>
+      <ol class="steps"><li data-i18n="help2a"></li><li data-i18n="help2b"></li><li data-i18n="help2c"></li><li data-i18n="help2d"></li></ol>
+    </div>
+    <div class="group">
+      <h3 data-i18n="help3T"></h3>
+      <ul class="where">
+        <li><svg><use href="#i-time"/></svg><span data-i18n="help3a"></span></li>
+        <li><svg><use href="#i-select"/></svg><span data-i18n="help3b"></span></li>
+        <li><svg><use href="#i-whole"/></svg><span data-i18n="help3c"></span></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3 data-i18n="help4T"></h3>
+      <ul class="bullets"><li data-i18n="help4a"></li><li data-i18n="help4b"></li><li data-i18n="help4c"></li><li data-i18n="help4d"></li><li data-i18n="help4e"></li></ul>
+    </div>
+  </section>
+
+  <!-- Short messages -->
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- The way to Claude -->
+  <footer id="claudeBar">
+    <div class="cb-text"><b id="cbTitle"></b><small id="cbHint"></small></div>
+    <button id="btnCopy" data-i18n-title="btnCopyTip"><svg><use href="#i-copy"/></svg><span id="btnCopyLabel"></span></button>
+  </footer>
+
+  <script src="CSInterface.js"></script>
+  <script src="common.js"></script>
+  <script src="update.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>

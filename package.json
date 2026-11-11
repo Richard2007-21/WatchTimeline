@@ -1,0 +1,14 @@
+{
+  "name": "watchtimeline",
+  "version": "1.0.0",
+  "description": "Pin change notes to the timeline of Adobe Premiere Pro and After Effects. A Claude skill works through them, only at those spots.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/notes.test.js && node tests/skill.test.js && node tests/update.test.js",
+    "build:release": "./scripts/build-release.sh"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
