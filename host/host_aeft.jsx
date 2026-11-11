@@ -503,6 +503,13 @@ function wt_walk(group, time, out, budget, names, force) {
             if (p.propertyType === PropertyType.PROPERTY) {
                 var type = p.propertyValueType;
                 if (type === PropertyValueType.NO_VALUE || type === PropertyValueType.MARKER) continue;
+                // X / Y / Z Position only count when the dimensions are separated.
+                var pm = String(p.matchName);
+                if (pm.indexOf('ADBE Position_') === 0) {
+                    var sep = false;
+                    try { sep = group.property('ADBE Position').dimensionsSeparated; } catch (e4) {}
+                    if (!sep) continue;
+                }
                 // Transform: the five basic values always, the rest only when it is in use.
                 var keep = force && wt_isBasicTransform(String(p.matchName));
                 if (!keep) { try { keep = p.numKeys > 0 || p.expressionEnabled || p.isModified; } catch (e2) { keep = false; } }
@@ -531,6 +538,9 @@ function wt_layerInfo(l, time, deep) {
             info.source = { name: String(l.source.name), id: l.source.id };
             if (l.source instanceof FootageItem && l.source.mainSource instanceof FileSource && l.source.mainSource.file) {
                 info.source.file = String(l.source.mainSource.file.fsName);
+            }
+            if (l.source instanceof FootageItem && l.source.mainSource instanceof SolidSource) {
+                info.source.color = wt_val(l.source.mainSource.color);       // 0 to 1
             }
         }
     } catch (e6) {}
@@ -590,6 +600,7 @@ function wt_inspect(json) {
             duration: wt_round(it.duration), numLayers: it.numLayers,
             workAreaStart: wt_round(it.workAreaStart), workAreaDuration: wt_round(it.workAreaDuration)
         };
+        try { out.comp.bgColor = wt_val(it.bgColor); } catch (e9) {}
         out.time = wt_round(time);
         out.timecode = wt_tc(it, time);
         out.start = a.start === undefined ? out.time : wt_round(a.start);
@@ -618,7 +629,9 @@ function wt_inspect(json) {
             var target = isTarget(i);
             var active = false;
             try { active = l.activeAtTime(time); } catch (e1) {}
-            var take = whole ? true : (bySelection ? target : (active || target));
+            // Layers that are not the note's own are listed too when they are active at the
+            // time (they may cover the target), but without their properties.
+            var take = whole ? true : (active || target);
             if (!take) continue;
             if (out.layers.length >= (whole && !a.all ? 200 : 40)) { out.truncated = true; break; }
             var li = wt_layerInfo(l, time, a.all === true || target || (!whole && !bySelection));

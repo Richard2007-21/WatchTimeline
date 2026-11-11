@@ -190,7 +190,8 @@ function noteText(n) {
   }
   const thread = threadLines(n);
   if (thread.length) {
-    lines.push('  Thread so far (earlier changes are still in the project):');
+    const changed = (n.history || []).some((h) => h.type === 'fixed');
+    lines.push('  Thread so far' + (changed ? ' (your earlier change is still in the project):' : ':'));
     lines.push.apply(lines, thread);
   }
   return lines.join('\n');
@@ -215,6 +216,7 @@ const HELP = `wt – WatchTimeline command line (talks to Premiere Pro / After E
   node wt.js eval <file.jsx> [--note id] [--no-undo]
   node wt.js eval --code "<ExtendScript>"
                                          Run ExtendScript in the app; prints { ok, value } as JSON
+                                         --no-undo: for scripts that only read (no undo step in After Effects)
   node wt.js done <id> --summary "…"     Report: the note is changed. Says what was changed
   node wt.js ask <id> --question "…"     Nothing changed: hand the note back with a question
   node wt.js jump <id>                   Move the playhead to the note and select its clips/layers
@@ -230,7 +232,7 @@ async function main() {
 
   if (cmd === 'status') {
     const list = instances().filter((i) => !hostFilter(opts.host) || i.host === hostFilter(opts.host));
-    if (!list.length) { print(opts.json ? { running: [] } : NOT_RUNNING); process.exitCode = 2; return; }
+    if (!list.length) throw new WtError('not-running', NOT_RUNNING);
     const out = [];
     for (const inst of list) {
       let ctx = null;
@@ -272,7 +274,7 @@ async function main() {
         continue;
       }
       print('  ' + o.notes.length + ' ' + (status === 'all' ? '' : status + ' ') + 'note' + (o.notes.length === 1 ? '' : 's') +
-        (list.length > 1 ? '  (use --host ' + (o.host === 'AEFT' ? 'ae' : 'ppro') + ')' : '') + '\n');
+        (list.length > 1 ? '  [this app: --host ' + (o.host === 'AEFT' ? 'ae' : 'ppro') + ']' : '') + '\n');
       print(o.notes.map(noteText).join('\n\n'));
     }
     return;
@@ -351,7 +353,7 @@ async function main() {
 const HINTS = {
   'no-project': 'No project is open in the app.',
   'no-container': 'No sequence / composition is open in the app.',
-  'note-missing': 'There is no note with that id (run: notes --all).',
+  'note-missing': 'No running app has a note with that id. Run "notes --all"; if the note belongs to an app that is closed, "status" shows which apps answer.',
   'container-missing': 'The sequence / composition of the note no longer exists in the project.',
   'host-failed': 'The app did not run the command. A dialog may be open, or the extension needs a restart of the app.',
   'script-error': 'Your script threw an error. Nothing after the failing line ran.',

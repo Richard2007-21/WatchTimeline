@@ -8,7 +8,7 @@
   var lib = function (name) { return nodeRequire(path.join(extPath, 'lib', name)); };
   var store = lib('store.js');
   var i18n = lib('i18n.js');
-  var HOST_API = '1.0.1';   // must match WT_HOST_API in host/host_common.jsx
+  var HOST_API = '1.0.2';   // must match WT_HOST_API in host/host_common.jsx
 
   function evalScript(code) {
     return new Promise(function (resolve) { cs.evalScript(code, resolve); });

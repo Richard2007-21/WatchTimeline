@@ -349,18 +349,22 @@ function wt_markerRemove(json) {
 
 // ---------------------------------------------------------------- frame
 
-// json: { container, time, ticks, path } – path without ".png". The playhead moves there.
+// json: { container, time, ticks, path } – path without ".png".
+// The playhead is put back where it was.
 function wt_frame(json) {
     try {
         var a = wt_parse(json) || {};
         if (!wt_project()) return wt_fail('no-project');
         var seq = wt_activate(a.container);
         if (!seq) return wt_fail('container-missing');
+        var back = '';
+        try { back = String(seq.getPlayerPosition().ticks); } catch (e0) {}
         seq.setPlayerPosition(a.ticks ? String(a.ticks) : wt_ticksAt(seq, Number(a.time) || 0));
         app.enableQE();
         var qseq = qe.project.getActiveSequence();
         if (!qseq) return wt_fail('frame-failed', 'No active sequence in QE.');
         qseq.exportFramePNG(qseq.CTI.timecode, String(a.path));
+        if (back) { try { seq.setPlayerPosition(back); } catch (e1) {} }
         return wt_stringify({ ok: true, path: String(a.path) + '.png' });
     } catch (e) {
         return wt_err(e, 'frame-failed');
@@ -382,11 +386,24 @@ function wt_propValue(p) {
     return v === null || v === undefined ? null : String(v);
 }
 
-function wt_components(clip, full) {
+function wt_plain(v) {
+    if (typeof v === 'number') return wt_round(v);
+    if (typeof v === 'string' || typeof v === 'boolean') return v;
+    if (v instanceof Array) {
+        var a = [];
+        for (var i = 0; i < v.length && i < 8; i++) a.push(typeof v[i] === 'number' ? wt_round(v[i]) : String(v[i]));
+        return a;
+    }
+    return v === null || v === undefined ? null : String(v);
+}
+
+// seqTime: the time of the note in the sequence. Keyframes live in clip time.
+function wt_components(clip, full, seqTime) {
     var out = [];
     var comps = null;
     try { comps = clip.components; } catch (e) {}
     if (!comps) return out;
+    var offset = Number(clip.start.seconds) - Number(clip.inPoint.seconds);   // sequence time = clip time + offset
     for (var i = 0; i < comps.numItems; i++) {
         var c = comps[i];
         var info = { name: String(c.displayName), matchName: String(c.matchName), index: i };
@@ -403,8 +420,19 @@ function wt_components(clip, full) {
                     if (p.isTimeVarying()) {
                         var keys = p.getKeys();
                         pi.keys = keys ? keys.length : 0;
-                        pi.keyTimes = [];
-                        for (var k = 0; keys && k < keys.length && k < 24; k++) pi.keyTimes.push(wt_round(keys[k].seconds));
+                        // Each keyframe: time in the sequence, time in the clip (what addKey takes), value.
+                        pi.keyframes = [];
+                        for (var k = 0; keys && k < keys.length && k < 24; k++) {
+                            var kf = { time: wt_round(Number(keys[k].seconds) + offset), clipTime: wt_round(keys[k].seconds) };
+                            try { kf.value = wt_plain(p.getValueAtKey(keys[k])); } catch (e4) {}
+                            pi.keyframes.push(kf);
+                        }
+                        // "value" above is the static value; this is the animated one at the note's time.
+                        try {
+                            var at = new Time();
+                            at.seconds = seqTime - offset;
+                            pi.valueAtTime = wt_plain(p.getValueAtTime(at));
+                        } catch (e5) {}
                     }
                 } catch (e3) {}
                 info.properties.push(pi);
@@ -470,7 +498,7 @@ function wt_inspect(json) {
             try { info.speed = wt_round(clip.getSpeed()); } catch (e1) {}
             try { info.disabled = !!clip.disabled; } catch (e2) {}
             try { if (clip.projectItem) info.media = String(clip.projectItem.getMediaPath() || clip.projectItem.name); } catch (e3) {}
-            info.components = wt_components(clip, full);
+            info.components = wt_components(clip, full, time);
             out.clips.push(info);
             return false;
         });

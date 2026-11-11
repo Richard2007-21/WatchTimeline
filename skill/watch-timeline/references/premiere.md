@@ -116,7 +116,10 @@ op.addKey(t1); op.setValueAtKey(t1, 100, true);
 op.addKey(t2); op.setValueAtKey(t2, 0, true);
 ```
 
-Read them back: `var keys = op.getKeys();` (array of `Time`), `op.getValueAtKey(keys[i])`.
+Read them back: `if (op.isTimeVarying()) { var keys = op.getKeys(); … }` (array of `Time`), then
+`op.getValueAtKey(keys[i])`. On a property without keyframes `getKeys()` returns `undefined`, so check
+`isTimeVarying()` first. `op.getValue()` is the static value; the animated value at a moment is
+`op.getValueAtTime(timeObject)` in clip time. `inspect` prints all of this as `keyframes` and `valueAtTime`.
 Remove one: `var t = new Time(); t.seconds = t1; op.removeKey(t);` (a `Time` object, not a number). Remove all: `op.setTimeVarying(false)`.
 A frame of a faded clip is transparent in the PNG, not black.
 

@@ -78,6 +78,8 @@ scale.setValue([120, 120, 100]);                // no keyframes on it
 ```
 
 Position is in pixels of the composition, scale in percent, opacity 0–100, rotation in degrees.
+Position, scale and anchor point read as three values also on 2D layers (`[640, 380, 0]`); `setValue`
+takes two or three.
 A property with keyframes (`numKeys > 0`) cannot take `setValue`. To make an animated value 20 % bigger,
 loop over the keys: `p.setValueAtKey(k, newValue)`.
 
@@ -198,5 +200,5 @@ transparent in the PNG.
 - Shape layers can hold thousands of properties. Address what you need by match name
   (`ADBE Vector Group`, `ADBE Vector Graphic - Fill`, `ADBE Vector Fill Color`, `ADBE Vector Shape - Rect`, …)
   instead of walking everything.
-- 3D layers have three position values and extra rotations; keep the array length you read.
+- 3D layers have extra rotations and an orientation; a value of 0 in the third place of a 2D layer means nothing.
 - Never save or close the project, never render through the render queue.

@@ -27,7 +27,7 @@ function createHost(kind) {
   };
 
   const api = {
-    wt_ping: () => '1.0.1',
+    wt_ping: () => '1.0.2',
     wt_context: () => ({
       host: kind, project: state.project, container: state.container, time: state.time, ticks: String(Math.round(state.time * 254016000000)),
       timecode: state.container ? tc(state.time) : '', fps: state.fps, duration: state.duration, selection: state.selection

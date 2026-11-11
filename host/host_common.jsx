@@ -5,7 +5,7 @@
  */
 
 // Raised when the host functions change, so a running host reloads them.
-var WT_HOST_API = '1.0.1';
+var WT_HOST_API = '1.0.2';
 
 function wt_ping() {
     return WT_HOST_API;

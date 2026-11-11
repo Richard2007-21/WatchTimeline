@@ -246,6 +246,7 @@ test('command line: says so when no app runs', async () => {
   assert.ok(/does not answer/.test(r.err));
   const s = await cli(['status']);
   assert.strictEqual(s.code, 2);
+  assert.strictEqual(JSON.parse(s.err).error, 'not-running');
 });
 
 test('bridge + command line: the whole round trip', async () => {
@@ -316,6 +317,7 @@ test('bridge + command line: the whole round trip', async () => {
     // The user answers; the note is open again and shows its thread.
     await actions.reopen(project, b.id, 'Nur Video');
     r = await cli(['notes']);
+    assert.ok(/Thread so far:\n/.test(r.out));                    // a question changed nothing
     assert.ok(/Claude asked: Schnitt auf allen Spuren\?/.test(r.out));
     assert.ok(/User answered: Nur Video/.test(r.out));
 
@@ -346,7 +348,7 @@ test('two apps at once: notes of both, a note id finds its app', async () => {
     const b = (await ae.actions.add('in after effects', 'time')).note;
     let r = await cli(['notes']);
     assert.ok(/in premiere/.test(r.out) && /in after effects/.test(r.out));
-    assert.ok(/--host ae/.test(r.out));
+    assert.ok(/\[this app: --host ae\]/.test(r.out));
     r = await cli(['notes', '--host', 'ae']);
     assert.ok(!/in premiere/.test(r.out) && /in after effects/.test(r.out));
     r = await cli(['done', b.id, '--summary', 'ok']);
